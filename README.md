@@ -1,11 +1,6 @@
 The Python audio processing suite
 =================================
 
-| Donate to support this free software |
-|:------------------------------------:|
-| <img width="164" height="164" title="" alt="" src="doc/bitcoin.png" /> |
-| [1NttJ7op1xxnM5Gg4qd61Gm7y7yxLbG3F5](bitcoin:1NttJ7op1xxnM5Gg4qd61Gm7y7yxLbG3F5) |
-
 This software contains Python modules and command-line tools with a variety of convenience functions to process and visualize audio signals.  For starters, you can easily plot the spectrum of a song, to discriminate among different-quality versions of the same file.  But the real goal of the suite is to automatically identify duplicates.
 
 Its main feature is the [ButterScotch Butterscotch signature] generator,  which generates a Butterscotch signature out of an audio file.  [ButterScotch Butterscotch signatures] are intended to identify duplicate songs regardless of encoding bitrate, which album or compilation they were released on, start time shifts or song incompleteness.  In addition, given an ideal quantization of the fingerprint, they can reliably serve as unique song identifiers. [ButterScotch Go see why].
@@ -23,6 +18,11 @@ Your computer must have these software packages:
  2. SciPy
  3. NumPy
  4. Matplotlib
+
+Optional:
+
+ 1. flac (for FLAC files support)
+ 2. lame (for MP3 files support)
 
 All major distributions include these packages, either as default or
 in their package manager repositories.  You can get these things in
