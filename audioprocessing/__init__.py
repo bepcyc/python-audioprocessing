@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import array
 import numpy
 import scipy
 import audioprocessing.stream

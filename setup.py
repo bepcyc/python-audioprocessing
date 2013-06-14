@@ -20,5 +20,5 @@ setup(
     url='http://rudd-o.com/new-projects/python-audioprocessing',
     packages=['audioprocessing'],
     scripts=["butterscotch", "butterscotch-batchanalyze"],
-    keywords="audio signal processing fft spectrum analyzer",
+    keywords="audio signal processing fft spectrum analyzer", requires=['numpy', 'scipy', 'processing'],
 )

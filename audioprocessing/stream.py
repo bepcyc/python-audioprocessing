@@ -117,7 +117,7 @@ class AudioOnsetDiscarder(WaveStream):
 
         while True:
             newchunk = self.wave.readframes(chunksize)
-            position = position + len(newchunk)
+            position += len(newchunk)
             newrms = calculate_rms_dB(newchunk)
             if newrms <= -96.0: continue
             if newrms - rms > threshold:
@@ -218,14 +218,14 @@ class LameMP3Decoder(WaveStream):
 
 
 class VorbisDecoder(WaveStream):
-    def __init__(self, file, numframes=None, firstframe=None):
+    def __init__(self, filename, numframes=None, firstframe=None):
         if numframes is not None and ( type(numframes) is not int or numframes < 1):
             raise TypeError, "numframes must be a positive int, not %s" % numframes
         if firstframe is not None and ( type(firstframe) is not int or numframes < 1):
             raise TypeError, "firstframe must be a positive int, not %s" % firstframe
 
         command = ["oggdec", "--quiet", "-o", "-"]
-        command += [file]
+        command += [filename]
         bufsize = 0
         self.popen = subprocess.Popen(command, stdout=subprocess.PIPE, bufsize=bufsize)
         self.pipe = self.popen.stdout

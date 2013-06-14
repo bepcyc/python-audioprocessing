@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import numpy
 import cPickle as pickle
 import time
 
@@ -62,15 +61,12 @@ def obtain_fingerprint(filename):
     return signature
 
 
-import time
-
-
 def timed(f):
     def x(*args, **kwargs):
         start = time.time()
         retval = f(*args, **kwargs)
         diff = time.time() - start
-        print "Function took %f seconds" % (diff)
+        print "Function took %f seconds" % diff
         return retval
 
     return x

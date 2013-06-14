@@ -75,7 +75,7 @@ if len([x for x in output_opts if x]) > 1:
 if len([x for x in output_opts if x]) == 0:
     options.text = True
 
-dict = {}
+pickle_dict = {}
 onefilefailed = False
 for arg in args:
     try:
@@ -87,7 +87,7 @@ for arg in args:
         if options.use_dB or options.fingerprint: signature = signature.as_dB()
         if not options.use_linear_bands: signature = signature.as_log_bands()
 
-        if options.pickle: dict[arg] = signature
+        if options.pickle: pickle_dict[arg] = signature
         if options.text:
             print_header(arg=arg, signature=signature, quiet=options.quiet)
             for row in signature.bands: print str(row)
@@ -110,7 +110,7 @@ for arg in args:
         sys.stderr.flush()
         sys.exit(1)
 
-if options.pickle: print pickle.dumps(dict),
+if options.pickle: print pickle.dumps(pickle_dict),
 if options.graph:
     import pylab
 

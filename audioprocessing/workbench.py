@@ -145,7 +145,7 @@ def plot_correlations(plot=True):
     triangulitos = []
     bolitas = []
     for c in toplot:
-        f1 = signkeys[c[0]];
+        f1 = signkeys[c[0]]
         f2 = signkeys[c[1]]
         triangulito = False
         for soundalike in soundalikes:
