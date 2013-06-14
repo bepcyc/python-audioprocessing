@@ -1,101 +1,114 @@
 #!/usr/bin/env python
 
-import audioprocessing
 import numpy
 import cPickle as pickle
 import time
 
+import audioprocessing
+
 
 class Database:
+    def __init__(self, filename):
+        self.filename = filename
+        try:
+            self.fingerprints = pickle.load(file(self.filename + ".fingerprints"))
+        except (IOError, OSError), e:
+            self.fingerprints = {}
+        try:
+            self.correlations = pickle.load(file(self.filename + ".correlations"))
+        except (IOError, OSError), e:
+            self.correlations = {}
 
-	def __init__(self,filename):
-		self.filename = filename
-		try: self.fingerprints = pickle.load(file(self.filename+".fingerprints"))
-		except (IOError,OSError),e: self.fingerprints = {}
-		try: self.correlations = pickle.load(file(self.filename+".correlations"))
-		except (IOError,OSError),e: self.correlations = {}
+    def get_fingerprints(self):
+        """ Returns:
+        a list with (filename,Butterscotch fingerprint) as each row
+        """
+        return self.fingerprints.items()
 
-	def get_fingerprints(self):
-		""" Returns:
-		a list with (filename,Butterscotch fingerprint) as each row
-		"""
-		return self.fingerprints.items()
+    def is_already_fingerprinted(self, filename):
+        return filename in self.fingerprints
 
-	def is_already_fingerprinted(self,filename):
-		return filename in self.fingerprints
+    def add_fingerprint(self, filename, fingerprint):
+        """ Arguments:
+        filename: string with the full, absolute path to the file
+        fingerprint: Butterscotch fingerprint
+        FIXME: make contentious for the insert IDs!
+        """
+        self.fingerprints[filename] = fingerprint
+        pickle.dump(self.fingerprints, file(self.filename + ".fingerprints", "w"), -1)
 
-	def add_fingerprint(self,filename,fingerprint):
-		""" Arguments:
-		filename: string with the full, absolute path to the file
-		fingerprint: Butterscotch fingerprint
-		FIXME: make contentious for the insert IDs!
-		"""
-		self.fingerprints[filename] = fingerprint
-		pickle.dump(self.fingerprints,file(self.filename+".fingerprints","w"),-1)
+    def add_correlations(self, filename, *correlations):
+        """ Arguments:
+        filename: string with the full, absolute path to the file
+        correlations: a list of (otherfilename,corrcoef)
+        """
+        for otherfilename, corrstrength in correlations:
+            self.correlations[filename, otherfilename] = corrstrength
 
-	def add_correlations(self,filename,*correlations):
-		""" Arguments:
-		filename: string with the full, absolute path to the file
-		correlations: a list of (otherfilename,corrcoef)
-		"""
-		for otherfilename,corrstrength in correlations:
-			self.correlations[filename,otherfilename] = corrstrength
-
-		pickle.dump(self.correlations,file(self.filename+".correlations","w"),-1)
+        pickle.dump(self.correlations, file(self.filename + ".correlations", "w"), -1)
 
 
 def get_next_song():
-	playlist = "playlist.m3u"
-	files = [ s.strip() for s in file(playlist).readlines() if s.strip() ]
-	files = [ f for f in files if not f.startswith("#") ]
-	for f in files: yield f
+    playlist = "playlist.m3u"
+    files = [s.strip() for s in file(playlist).readlines() if s.strip()]
+    files = [f for f in files if not f.startswith("#")]
+    for f in files: yield f
+
 
 def obtain_fingerprint(filename):
-	signature = audioprocessing.butterscotch(filename)
-	signature = signature.halve_highest_freq()
-	signature = signature.as_log_bands()
-	return signature
+    signature = audioprocessing.butterscotch(filename)
+    signature = signature.halve_highest_freq()
+    signature = signature.as_log_bands()
+    return signature
+
 
 import time
+
+
 def timed(f):
-	def x(*args,**kwargs):
-		start = time.time()
-		retval = f(*args,**kwargs)
-		diff = time.time()  - start
-		print "Function took %f seconds"%(diff)
-		return retval
-	return x
+    def x(*args, **kwargs):
+        start = time.time()
+        retval = f(*args, **kwargs)
+        diff = time.time() - start
+        print "Function took %f seconds" % (diff)
+        return retval
+
+    return x
+
 
 def run():
-	database = Database("wasabitest")
-	threshold = 0.7
-	for filename in get_next_song():
-		def loop():
-			if database.is_already_fingerprinted(filename):
-				print "Skipping %s"%filename
-				return
-			print "Working with file %s"%filename
-			try: fingerprint = obtain_fingerprint(filename)
-			except NotImplementedError,e:
-				print "Skipping %s because: %s"%(filename,e)
-				return
-			print fingerprint
-			all_fingerprints = database.get_fingerprints()
-			print "Correlating against %d fingerprints..."%len(all_fingerprints),
-			starttime = time.time()
-			corrs = []
-			for otherfn,other in all_fingerprints:
-				corr = fingerprint.correlate(other)
-				if corr > threshold: corrs.append( (otherfn,corr) )
-			print "process yielded %d correlations in %f seconds"%(len(corrs),time.time() - starttime)
-			database.add_fingerprint(filename,fingerprint)
-			database.add_correlations(filename,*corrs)
-			print ""
-		#loop = timed(loop)
-		loop()
+    database = Database("wasabitest")
+    threshold = 0.7
+    for filename in get_next_song():
+        def loop():
+            if database.is_already_fingerprinted(filename):
+                print "Skipping %s" % filename
+                return
+            print "Working with file %s" % filename
+            try:
+                fingerprint = obtain_fingerprint(filename)
+            except NotImplementedError, e:
+                print "Skipping %s because: %s" % (filename, e)
+                return
+            print fingerprint
+            all_fingerprints = database.get_fingerprints()
+            print "Correlating against %d fingerprints..." % len(all_fingerprints),
+            starttime = time.time()
+            corrs = []
+            for otherfn, other in all_fingerprints:
+                corr = fingerprint.correlate(other)
+                if corr > threshold: corrs.append((otherfn, corr))
+            print "process yielded %d correlations in %f seconds" % (len(corrs), time.time() - starttime)
+            database.add_fingerprint(filename, fingerprint)
+            database.add_correlations(filename, *corrs)
+            print ""
+
+        #loop = timed(loop)
+        loop()
+
 
 if __name__ == "__main__":
-	run()
+    run()
 
 """
 
